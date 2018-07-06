@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>mapCalculator</title>
+
+    <!--<meta name="viewport" content="initial-scale=1.0, user-scalable=no">-->
+
+    <link rel="import" href="bower_components/polymer/polymer.html">
+    <link rel="import" href="bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="bower_components/iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="bower_components/paper-styles/demo-pages.html">
+    <link rel="import" href="bower_components/paper-toggle-button/paper-toggle-button.html">
+    <link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+    <link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html">
+    <link rel="import" href="bower_components/paper-item/paper-item.html">
+    <link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
+    <link rel="import" href="bower_components/paper-button/paper-button.html">
+    <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="bower_components/google-map/google-map.html">
+    <link rel="import" href="bower_components/google-map/google-map-marker.html">
+    <link rel="import" href="bower_components/google-map/google-map-search.html">
+    <link rel="import" href="bower_components/google-map/google-map-directions.html">
+    <link rel="import" href="bower_components/iron-icon/iron-icon.html">
+    <link rel="import" href="bower_components/iron-icons/iron-icons.html">
+    <link rel="import" href="bower_components/paper-item/paper-item.html">
+    <link rel="import" href="bower_components/paper-item/paper-icon-item.html">
+    <link rel="import" href="bower_components/paper-input/paper-input.html">
+    <link rel="import" href="bower_components/paper-card/paper-card.html">
+    <link rel="import" href="bower_components/iron-icons/maps-icons.html">
+    <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
+    <link rel="import" href="bower_components/datetime-picker/datetime-picker.html">
+
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="node_modules/@webcomponents/webcomponents-loader.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+</head>
+<body>
+
+<custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
+        .main {
+            margin: auto;
+            width: 99%;
+            background-color: #fff;
+            border: 1px solid #C0C0C0;
+            border-radius: 5px;
+        }
+
+        .switch-button {
+            max-width: 50%;
+            align-items: center;
+            display: table;
+            padding: 0 10px;
+            margin: 15px auto;
+            background-color: #DCDCDC;
+            border: 0.5px solid #C0C0C0;
+            border-radius: 5px;
+        }
+
+        .switch-button > div {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 10px;
+        }
+
+        .cargo-data {
+            align-items: center;
+            display: table;
+            width: 100%;
+            padding: 0 auto;
+            margin: 5px auto;
+            background-color: #f4f4f4;
+            border: 0.5px solid #C0C0C0;
+            border-radius: 5px;
+        }
+
+        .cargo-data > div {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 10px;
+        }
+
+        .map-data {
+            height: 600px;
+            background-color: #f4f4f4;
+            border: 0.5px solid #C0C0C0;
+            border-radius: 5px;
+        }
+
+        paper-toggle-button {
+            margin-right: 10px;
+        }
+
+        paper-toggle-button.green {
+            --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+            --paper-toggle-button-checked-button-color: var(--paper-green-500);
+            --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+            --paper-toggle-button-unchecked-bar-color: var(--paper-teal-500);
+            --paper-toggle-button-unchecked-button-color: var(--paper-teal-500);
+            --paper-toggle-button-unchecked-ink-color: var(--paper-teal-500);
+        }
+
+        .table-header {
+            background-color: #dddddd;
+        }
+
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        td, th {
+            border: 1px solid #C0C0C0;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        paper-button {
+            width: 100%;
+            color: white;
+            background-color: green;
+            margin-left: 0;
+        }
+
+        h3 {
+            text-decoration: underline;
+            margin: 10px auto;
+        }
+
+        .datetime {
+            background-color: #f4f4f4;
+        }
+
+        .input {
+            width: 100%;
+            height: 100%
+        }
+
+        .input-text {
+            width: 90%;
+            float: left
+        }
+
+        .input-icon {
+            width: 10%;
+            float: right
+        }
+
+        paper-icon-button.green {
+            margin-top: 20px;
+            margin-left: 10px;
+            color: var(--paper-green-500);
+            --paper-icon-button-ink-color: var(--paper-indigo-500);
+        }
+
+        paper-icon-button.green:hover {
+            background-color: var(--paper-green-500);
+
+            color: white;
+        }
+
+        paper-icon-button.green.active {
+            background-color: var(--paper-red-500);
+            color: white;
+        }
+
+        #deliveryPints {
+            display: none;
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Tooltip container */
+        .tooltip {
+            position: relative;
+            float: right;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+
+            /* Position the tooltip text */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+
+            /* Fade in tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Tooltip arrow */
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border: 5px solid transparent;
+            border-top-color: #555;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</custom-style>
+
+<div class="main">
+    <div class="switch-button centered">
+        <div class="switch" style="padding-right: 0">
+            <p>Городская доставка</p>
+        </div>
+        <div>
+            <paper-toggle-button class="green">Магистраль</paper-toggle-button>
+        </div>
+    </div>
+    <template is="dom-bind">
+        <div class="cargo-data">
+            <div style="width: 85%">
+                <table>
+                    <tr class="table-header">
+                        <th>
+                            Погрузка
+                            <button class="tooltip" onclick="addDeliveryPoints()">+
+                                <span class="tooltiptext">Нажмите для добавления промежуточной точки разгрузки</span>
+                            </button>
+                        </th>
+                        <th>Конец маршрута</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="input">
+                                <div class="input-text">
+                                    <paper-input label="Начало маршрута" value="{{start}}"></paper-input>
+                                </div>
+                                <div class="input-icon">
+                                    <paper-icon-button toggles raised class="custom green" icon="room" alt="Отметить"
+                                                       onClick="initStartPointClick()"
+                                                       title="Отметить"></paper-icon-button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input">
+                                <div class="input-text">
+                                    <paper-input label="Конец маршрута" value="{{end}}"></paper-input>
+                                </div>
+                                <div class="input-icon">
+                                    <paper-icon-button toggles raised class="green" icon="room" alt="Отметить"
+                                                       onClick="initEndPointClick()"
+                                                       title="Отметить"></paper-icon-button>
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input class="datetime" type="number" value="{{startDate}}" placeholder="min">
+                        </td>
+                        <td>
+                            <input class="datetime" type="number" value="{{endDate}}" placeholder="min">
+                        </td>
+                    </tr>
+                </table>
+                <table id="deliveryPints">
+                    <tr class="table-header">
+                        <td>Адрес доставки по маршруту</td>
+                        <td>Время доставки</td>
+                        <td>Добавить/Удалить доставку</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type='text' placeholder="адрес" value={{delivery}}>
+                        </td>
+                        <td>
+                            <input type='number' placeholder="min" value={{timeDelivery}}>
+                        </td>
+                        <td>
+                            <input type='button' class='AddNew' value='Добавить доставку'>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div>
+                <paper-dropdown-menu-light label="Категория машины">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" selected="0">
+                        <paper-item>Крытый</paper-item>
+                        <paper-item>Открытый</paper-item>
+                        <paper-item>Пассажирский</paper-item>
+                        <paper-item>Спациальная техника</paper-item>
+                        <paper-item>Цистерна</paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu-light>
+                <paper-button raised>Расчитать</paper-button>
+            </div>
+        </div>
+
+        <div class="map-data">
+            <google-map map="{{map}}" latitude="50.45466" longitude="30.5238000" zoom="10" click-events="true"
+                        mouse-events="true"
+                        api-key="AIzaSyAzfbw6SKbft4KSyi0gzmO08YPfMVlcOwM" disable-default-ui>
+                <!--<google-map-marker latitude="50.45466" longitude="30.5238000"-->
+                <!--title="Go Giants!" draggable="true"></google-map-marker>-->
+            </google-map>
+
+
+            <google-map-directions
+                    map="{{map}}"
+                    start-address="{{start}}"
+                    end-address="{{end}}"
+                    api-key="AIzaSyAzfbw6SKbft4KSyi0gzmO08YPfMVlcOwM"></google-map-directions>
+        </div>
+
+        <div>
+            <h3>Стоимость:</h3>
+            <table>
+                <tr class="table-header">
+                    <th>Зона 1</th>
+                    <th>Зона 2</th>
+                    <th>Зона 3</th>
+                    <th>Зона 4</th>
+                    <th>Итого</th>
+                </tr>
+                <tr>
+                    <td>значение</td>
+                    <td>значение</td>
+                    <td>значение</td>
+                    <td>значение</td>
+                    <td>суммарно</td>
+                </tr>
+            </table>
+        </div>
+
+        <script>active
+        let startMarkerInit = false;
+        let endMarkerInit = false;
+        let pointIndex = 0;
+
+        function initStartPointClick() {
+            startMarkerInit = !startMarkerInit;
+            endMarkerInit = false;
+            console.log(startMarkerInit);
+            console.log(endMarkerInit);
+        }
+
+        function initEndPointClick() {
+            endMarkerInit = !endMarkerInit;
+            startMarkerInit = false;
+            console.log(startMarkerInit);
+            console.log(endMarkerInit);
+        }
+
+        var map = document.querySelector('google-map');
+        map.addEventListener('google-map-click', function (e) {
+            let marker = document.createElement('google-map-marker');
+            let latLng = e.detail.latLng;
+            console.log('pin dropped', latLng.lat(), latLng.lng());
+            marker.setAttribute('latitude', latLng.lat());
+            marker.setAttribute('longitude', latLng.lng());
+            marker.setAttribute('title', "Dynamic title");
+            marker.setAttribute('draggable', true);
+            marker.setAttribute('click-events', true);
+            marker.setAttribute('mouse-events', true);
+            console.log(marker.getAttribute('latitude'));
+            marker.addEventListener('google-map-marker-dragend', function (e) {
+                let latLng = e.detail.latLng;
+                marker.setAttribute('latitude', latLng.lat());
+                marker.setAttribute('longitude', latLng.lng());
+                console.log(marker.getAttribute('latitude'));
+            });
+            Polymer.dom(map).appendChild(marker);
+
+            // alert(marker.getAttribute('latitude'));
+        });
+        </script>
+        <script>
+            function addDeliveryPoints() {
+                var x = document.getElementById("deliveryPints");
+                if (x.style.display === "inline-table") {
+                    x.style.display = "none";
+                } else {
+                    x.style.display = "inline-table";
+                }
+            }
+        </script>
+        <script>
+            $('.AddNew').click(function () {
+                var row = $(this).closest('tr').clone();
+                row.find('input').val('');
+                $(this).closest('tr').after(row);
+                $('input[type="button"]', row).removeClass('AddNew').addClass('RemoveRow').val('Удалить доставку');
+            });
+
+            $('table').on('click', '.RemoveRow', function () {
+                $(this).closest('tr').remove();
+            });
+        </script>
+        <script>
+            $('.green').click(function (e) {
+                var elems = document.querySelector(".active");
+                if (elems !== null) {
+                    $('.green').removeClass('active');
+                } else if (elems) {
+
+                }
+                if (elems != this) {
+                    $(this).addClass('active');
+                }
+            });
+        </script>
+
+    </template>
+</div>
+</body>
+</html>
