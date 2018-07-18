@@ -18,6 +18,8 @@
     <link rel="import" href="bower_components/paper-button/paper-button.html">
     <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
     <link rel="import" href="bower_components/google-map/google-map.html">
+    <link rel="import" href="bower_components/google-map/google-map-poly.html">
+    <link rel="import" href="bower_components/google-map/google-map-point.html">
     <link rel="import" href="bower_components/google-map/google-map-marker.html">
     <link rel="import" href="bower_components/google-map/google-map-search.html">
     <link rel="import" href="bower_components/google-map/google-map-directions.html">
@@ -30,6 +32,8 @@
     <link rel="import" href="bower_components/iron-icons/maps-icons.html">
     <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
     <link rel="import" href="bower_components/datetime-picker/datetime-picker.html">
+    <link rel="import" href="bower_components/property-mixins/range-mixin.html">
+    <link rel="import" href="bower_components/property-mixins/intl-number-format-mixin.html">
 
     <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
     <script src="node_modules/@webcomponents/webcomponents-loader.js"></script>
@@ -93,7 +97,7 @@
             margin-right: 10px;
         }
 
-        paper-toggle-button.green {
+        paper-toggle-button.blue {
             --paper-toggle-button-checked-bar-color: var(--paper-green-500);
             --paper-toggle-button-checked-button-color: var(--paper-green-500);
             --paper-toggle-button-checked-ink-color: var(--paper-green-500);
@@ -124,6 +128,7 @@
         }
 
         paper-button {
+            text-align: center;
             width: 100%;
             color: white;
             background-color: green;
@@ -141,29 +146,29 @@
 
         .input {
             width: 100%;
-            height: 100%
+            height: 100%;
         }
 
         .input-text {
             width: 90%;
-            float: left
+            float: left;
         }
 
         .input-icon {
             width: 10%;
-            float: right
+            float: right;
         }
 
         paper-icon-button.green {
+            width: 85%;
             margin-top: 20px;
-            margin-left: 10px;
+            margin-left: 15%;
             color: var(--paper-green-500);
             --paper-icon-button-ink-color: var(--paper-indigo-500);
         }
 
         paper-icon-button.green:hover {
             background-color: var(--paper-green-500);
-
             color: white;
         }
 
@@ -232,7 +237,7 @@
             <p>Городская доставка</p>
         </div>
         <div>
-            <paper-toggle-button class="green">Магистраль</paper-toggle-button>
+            <paper-toggle-button class="blue">Магистраль</paper-toggle-button>
         </div>
     </div>
     <template is="dom-bind">
@@ -242,7 +247,7 @@
                     <tr class="table-header">
                         <th>
                             Погрузка
-                            <button class="tooltip" onclick="addDeliveryPoints()">+
+                            <button class="tooltip">+
                                 <span class="tooltiptext">Нажмите для добавления промежуточной точки разгрузки</span>
                             </button>
                         </th>
@@ -252,7 +257,8 @@
                         <td>
                             <div class="input">
                                 <div class="input-text">
-                                    <paper-input label="Начало маршрута" value="{{start}}"></paper-input>
+                                    <paper-input id="startPoint" label="Начало маршрута"
+                                                 value="{{start}}"></paper-input>
                                 </div>
                                 <div class="input-icon">
                                     <paper-icon-button toggles raised class="custom green" icon="room" alt="Отметить"
@@ -264,7 +270,7 @@
                         <td>
                             <div class="input">
                                 <div class="input-text">
-                                    <paper-input label="Конец маршрута" value="{{end}}"></paper-input>
+                                    <paper-input id="endPoint" label="Конец маршрута" value="{{end}}"></paper-input>
                                 </div>
                                 <div class="input-icon">
                                     <paper-icon-button toggles raised class="green" icon="room" alt="Отметить"
@@ -277,10 +283,12 @@
                     </tr>
                     <tr>
                         <td>
-                            <input class="datetime" type="number" value="{{startDate}}" placeholder="min">
+                            <paper-input class="datetime" type="number" value="{{startDate}}"
+                                         placeholder="min"></paper-input>
                         </td>
                         <td>
-                            <input class="datetime" type="number" value="{{endDate}}" placeholder="min">
+                            <paper-input class="datetime" type="number" value="{{endDate}}"
+                                         placeholder="min"></paper-input>
                         </td>
                     </tr>
                 </table>
@@ -292,13 +300,24 @@
                     </tr>
                     <tr>
                         <td>
-                            <input type='text' placeholder="адрес" value={{delivery}}>
+                            <!--<paper-input type='text' placeholder="адрес" id="delAddress" value="{{delivery}}"></paper-input>-->
+                            <div class="input">
+                                <div class="input-text">
+                                    <paper-input id="delAddress" type='text' placeholder="адрес"
+                                                 value="{{delivery}}"></paper-input>
+                                </div>
+                                <div class="input-icon">
+                                    <paper-icon-button class='green' id="firstBtn" icon="room" alt="Отметить"
+                                                       title="Отметить"></paper-icon-button>
+                                </div>
+                            </div>
                         </td>
                         <td>
-                            <input type='number' placeholder="min" value={{timeDelivery}}>
+                            <paper-input placeholder="min" type="number" id="delTime"
+                                         value="{{timeDelivery}}"></paper-input>
                         </td>
                         <td>
-                            <input type='button' class='AddNew' value='Добавить доставку'>
+                            <paper-button class='AddNew'>Добавить доставку</paper-button>
                         </td>
                     </tr>
                 </table>
@@ -314,7 +333,7 @@
                         <paper-item>Цистерна</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
-                <paper-button raised>Расчитать</paper-button>
+                <paper-button raised onClick="countJourney()">Расчитать</paper-button>
             </div>
         </div>
 
@@ -322,16 +341,16 @@
             <google-map map="{{map}}" latitude="50.45466" longitude="30.5238000" zoom="10" click-events="true"
                         mouse-events="true"
                         api-key="AIzaSyAzfbw6SKbft4KSyi0gzmO08YPfMVlcOwM" disable-default-ui>
-                <!--<google-map-marker latitude="50.45466" longitude="30.5238000"-->
-                <!--title="Go Giants!" draggable="true"></google-map-marker>-->
             </google-map>
 
 
-            <google-map-directions
-                    map="{{map}}"
-                    start-address="{{start}}"
-                    end-address="{{end}}"
-                    api-key="AIzaSyAzfbw6SKbft4KSyi0gzmO08YPfMVlcOwM"></google-map-directions>
+            <!--<google-map-directions-->
+            <!--map="{{map}}"-->
+            <!--start-address="{{start}}"-->
+            <!--end-address="{{end}}"-->
+            <!--api-key="AIzaSyAzfbw6SKbft4KSyi0gzmO08YPfMVlcOwM"></google-map-directions>-->
+
+
         </div>
 
         <div>
@@ -354,84 +373,394 @@
             </table>
         </div>
 
-        <script>active
-        let startMarkerInit = false;
-        let endMarkerInit = false;
-        let pointIndex = 0;
+        <script>
 
-        function initStartPointClick() {
-            startMarkerInit = !startMarkerInit;
-            endMarkerInit = false;
-            console.log(startMarkerInit);
-            console.log(endMarkerInit);
-        }
+            let startMarkerInit = false;
+            let endMarkerInit = false;
+            let startPointIndex = 0;
+            let endPointIndex = 0;
+            let startMarker = null;
+            let endMarker = null;
+            let firstDeliveryPoint = null;
+            let arrayMarkers = Array();
+            var firstDelPointIndex = 0;
 
-        function initEndPointClick() {
-            endMarkerInit = !endMarkerInit;
-            startMarkerInit = false;
-            console.log(startMarkerInit);
-            console.log(endMarkerInit);
-        }
+            function initStartPointClick() {
+                startMarkerInit = !startMarkerInit;
+                endMarkerInit = false;
+                firstDelPointIndex = 0;
+            }
 
-        var map = document.querySelector('google-map');
-        map.addEventListener('google-map-click', function (e) {
-            let marker = document.createElement('google-map-marker');
-            let latLng = e.detail.latLng;
-            console.log('pin dropped', latLng.lat(), latLng.lng());
-            marker.setAttribute('latitude', latLng.lat());
-            marker.setAttribute('longitude', latLng.lng());
-            marker.setAttribute('title', "Dynamic title");
-            marker.setAttribute('draggable', true);
-            marker.setAttribute('click-events', true);
-            marker.setAttribute('mouse-events', true);
-            console.log(marker.getAttribute('latitude'));
-            marker.addEventListener('google-map-marker-dragend', function (e) {
+            function initEndPointClick() {
+                endMarkerInit = !endMarkerInit;
+                startMarkerInit = false;
+                firstDelPointIndex = 0;
+            }
+
+            let startEdit = document.querySelector('#startPoint');
+            if (startEdit !== null) {
+                startEdit.addEventListener('change', function (e) {
+                    console.log("startEdit");
+                });
+            }
+
+            let endEdit = document.querySelector('#endPoint');
+            if (endEdit !== null) {
+                endEdit.addEventListener('change', function (e) {
+                    console.log("endEdit");
+                });
+            }
+
+            let map = document.querySelector('google-map');
+            map.addEventListener('google-map-click', function (e) {
+                //ставим точку старта. Если уже стоит, то корректируем.
+                if (startMarkerInit && !endMarkerInit && startPointIndex === 0 && firstDelPointIndex === 0) {
+                    startPointIndex++;
+                    startMarker = createMarker(e, 'startPoint');
+                    Polymer.dom(map).appendChild(startMarker);
+
+                } else if (startMarkerInit && !endMarkerInit && startPointIndex === 1 && firstDelPointIndex === 0) {
+                    changePointCoordinates(e, startMarker, 'startPoint');
+
+                    //ставим точку финиша. Если стоит, то корректируем.
+                } else if (!startMarkerInit && endMarkerInit && endPointIndex === 0 && firstDelPointIndex === 0) {
+                    endPointIndex++;
+                    endMarker = createMarker(e, 'endPoint');
+                    Polymer.dom(map).appendChild(endMarker);
+                } else if (!startMarkerInit && endMarkerInit && endPointIndex === 1 && firstDelPointIndex === 0) {
+                    changePointCoordinates(e, endMarker, 'endPoint');
+                }
+
+                //Ставим первую точку доставки. Последующие записываем сразу в массив для роутера. Если стоит, то корректируем.
+                if (!startMarkerInit && !endMarkerInit && firstDelPointIndex !== 0) {
+                    let delId = 'delAddress';
+                    if (firstDelPointIndex > 1) {
+                        delId = delId + firstDelPointIndex;
+                    }
+                    let id = 'marker' + firstDelPointIndex;
+                    let createdMarker = document.getElementById(id);
+                    if (createdMarker === null) {
+                        let delMarker = createMarker(e, delId);
+                        delMarker.setAttribute('id', id);
+
+                        if (delId === 'delAddress') {
+                            firstDeliveryPoint = delMarker;
+                            Polymer.dom(map).appendChild(firstDeliveryPoint);
+                        } else {
+                            arrayMarkers.splice(firstDelPointIndex, 0, delMarker);
+                            Polymer.dom(map).appendChild(delMarker);
+                        }
+                    } else {
+                        changePointCoordinates(e, createdMarker, delId);
+                    }
+                }
+            });
+
+            function createMarker(e, id) {
+                let marker = document.createElement('google-map-marker');
                 let latLng = e.detail.latLng;
                 marker.setAttribute('latitude', latLng.lat());
                 marker.setAttribute('longitude', latLng.lng());
-                console.log(marker.getAttribute('latitude'));
-            });
-            Polymer.dom(map).appendChild(marker);
-
-            // alert(marker.getAttribute('latitude'));
-        });
-        </script>
-        <script>
-            function addDeliveryPoints() {
-                var x = document.getElementById("deliveryPints");
-                if (x.style.display === "inline-table") {
-                    x.style.display = "none";
+                marker.setAttribute('title', "Dynamic title");
+                marker.setAttribute('draggable', true);
+                marker.setAttribute('click-events', true);
+                marker.setAttribute('mouse-events', true);
+                marker.setAttribute('drag-events', true);
+                if (id === 'startPoint') {
+                    marker.setAttribute('icon', "http://maps.google.com/mapfiles/ms/icons/green-dot.png");
+                } else if (id === 'endPoint') {
+                    marker.setAttribute('icon', "http://maps.google.com/mapfiles/ms/icons/red-dot.png");
                 } else {
-                    x.style.display = "inline-table";
+                    marker.setAttribute('icon', "http://maps.google.com/mapfiles/ms/icons/blue-dot.png")
                 }
+                addListenerOnMarker(marker, id);
+                return marker;
+            }
+
+            function addListenerOnMarker(marker, id) {
+                let index = firstDelPointIndex;
+                // let index = myTable.rows.length;
+
+                let input = document.getElementById(id);
+                input.value = marker.getAttribute('latitude') + " " + marker.getAttribute('longitude');
+
+                if (marker != null) {
+                    marker.addEventListener('google-map-marker-dragend', function (e) {
+                        let latLng = e.detail.latLng;
+                        marker.setAttribute('latitude', latLng.lat());
+                        marker.setAttribute('longitude', latLng.lng());
+                        input.value = marker.getAttribute('latitude') + " " + marker.getAttribute('longitude');
+                    });
+
+                    //При двойном нажатии маркеры: Старта, Финиша и Первую доставку удаляем с карты; остальные доставки удаляем из массива и скрываем поле.
+                    //Сделано для того, чтобы индекс при создании/удалении удовлетворил все случаи.
+                    marker.addEventListener('google-map-marker-dblclick', function () {
+                        Polymer.dom(map).removeChild(marker);
+                        input.value = null;
+                        marker = null;
+                        if (id === 'startPoint') {
+                            startPointIndex--;
+                            startMarker = marker;
+                        } else if (id === 'endPoint') {
+                            endPointIndex--;
+                            endMarker = marker;
+                        } else if (id === 'delAddress') {
+                            firstDeliveryPoint = marker;
+                            firstDelPointIndex = 0;
+                        } else {
+                            delete arrayMarkers[index - 2];
+                            document.getElementById('row' + index).style.display = "none";
+                            firstDelPointIndex = 0;
+                        }
+                    });
+                }
+            }
+
+            function changePointCoordinates(e, marker, id) {
+                let latLng = e.detail.latLng;
+                marker.setAttribute('latitude', latLng.lat());
+                marker.setAttribute('longitude', latLng.lng());
+                let input = document.getElementById(id);
+                input.value = latLng.lat() + " " + latLng.lng();
+            }
+
+            let plusBtn = document.querySelector(".tooltip");
+            let myTable = document.getElementById("deliveryPints");
+
+            plusBtn.addEventListener('click', function () {
+                if (myTable.style.display === "inline-table") {
+                    myTable.style.display = "none";
+                } else {
+                    myTable.style.display = "inline-table";
+                }
+            });
+
+            let addIconBtn = document.getElementById("firstBtn");
+            addIconBtn.addEventListener('click', function () {
+                endMarkerInit = false;
+                startMarkerInit = false;
+                if (firstDelPointIndex !== 1) {
+                    firstDelPointIndex = 1;
+                } else {
+                    firstDelPointIndex = 0;
+                }
+            });
+
+            let addDelAddress = document.getElementById("delAddress");
+            addDelAddress.addEventListener('change', function () {
+                // alert("i`m first address");
+            });
+
+            let addBtn = document.querySelector(".AddNew");
+            addBtn.addEventListener('click', function () {
+                let currentIndex = myTable.rows.length;
+                let currentRow = myTable.insertRow(-1);
+
+                currentRow.setAttribute('id', 'row' + currentIndex);
+
+
+                let divInput = document.createElement('div');
+                divInput.setAttribute('class', 'input');
+
+                let divInputText = document.createElement('div');
+                divInputText.setAttribute('class', 'input-text');
+
+                let divInputIcon = document.createElement('div');
+                divInputIcon.setAttribute('class', 'input-icon');
+
+                let delAddress = document.createElement('paper-input');
+                delAddress.setAttribute('type', 'text');
+                delAddress.setAttribute('placeholder', 'адрес' + currentIndex);
+                delAddress.setAttribute('id', 'delAddress' + currentIndex);
+                // delAddress.setAttribute('value', 'delivery' + currentIndex);
+
+                let delIcon = document.createElement('paper-icon-button');
+                delIcon.setAttribute('class', 'green');
+                delIcon.setAttribute('icon', 'room');
+                delIcon.setAttribute('alt', 'Отметить');
+                delIcon.setAttribute('onClick', '');
+                delIcon.setAttribute('title', 'Отметить');
+
+                divInputText.appendChild(delAddress);
+                divInputIcon.appendChild(delIcon);
+
+                divInput.appendChild(divInputText);
+                divInput.appendChild(divInputIcon);
+
+                let delTime = document.createElement('paper-input');
+                delTime.setAttribute('type', 'number');
+                delTime.setAttribute('placeholder', 'min' + currentIndex);
+                delTime.setAttribute('id', 'delTime' + currentIndex);
+                // delTime.setAttribute('value', 'timeDelivery' + currentIndex);
+
+                let delBtn = document.createElement('paper-button');
+                delBtn.setAttribute('class', 'removeRow');
+                Polymer.dom(delBtn).innerHTML = "Убрать доставку";
+
+                let currentCell = currentRow.insertCell(-1);
+                currentCell.appendChild(divInput);
+                currentCell = currentRow.insertCell(-1);
+                currentCell.appendChild(delTime);
+                currentCell = currentRow.insertCell(-1);
+                currentCell.appendChild(delBtn);
+
+                delAddress.addEventListener('change', function () {
+                    // alert("i working");
+
+                });
+
+                //Удалени маркера из массива без изменения индекса для  учета всех ситуаций создания/удалени маркера.
+                //С той же целью поле создания маркера при нажатии не удаляем, а скрываем.
+                delBtn.addEventListener('click', function () {
+                    let id = 'marker' + currentIndex;
+                    let deleteMarker = document.getElementById(id);
+                    if (deleteMarker !== null) {
+                        // arrayMarkers.splice(currentIndex, 1);
+                        delete arrayMarkers[currentIndex - 2];
+
+                        Polymer.dom(map).removeChild(deleteMarker);
+                        firstDelPointIndex = 0;
+                        deleteMarker = null;
+                    }
+                    // myTable.deleteRow(currentIndex);
+                    document.getElementById('row' + currentIndex).style.display = "none";
+
+                });
+
+                delIcon.addEventListener('click', function () {
+                    endMarkerInit = false;
+                    startMarkerInit = false;
+                    let str = delIcon.getAttribute('class');
+                    if (str.includes('active')) {
+                        delIcon.setAttribute('class', str.replace(' active', ''));
+                        firstDelPointIndex = 0;
+                    } else {
+                        let allDelIcons = document.getElementsByClassName('green');
+                        Array.prototype.forEach.call(allDelIcons, function (elem) {
+                            elem.setAttribute('class', elem.getAttribute('class').replace(' active', ''));
+                        });
+
+                        delIcon.setAttribute('class', delIcon.getAttribute('class') + " active");
+                        firstDelPointIndex = currentIndex;
+                    }
+                });
+            });
+
+            //Перед запросом идет проверка на наличие точки старта и финиша.
+            //После чего массив запоняется точками старта, первая точка доставки и финиша; и после запроса чиститься для дальнейших изменений.
+            function countJourney() {
+                if (startMarker === null || endMarker === null) {
+                    alert("Необходимо заполнить точки Старта и Финиша");
+                } else {
+                    arrayMarkers.splice(0, 0, startMarker);
+                    arrayMarkers.splice(arrayMarkers.length, 0, endMarker);
+                    if (firstDeliveryPoint !== null) {
+                        arrayMarkers.splice(1, 0, firstDeliveryPoint);
+                    }
+
+                    // let oldPoly = document.querySelector('google-map-poly');
+                    // if (oldPoly !== null) {
+                    //     Polymer.dom(map).removeChild(oldPoly);
+                    //     oldPoly = null;
+                    // }
+
+                    let pointsCoordinates = Array();
+
+                    arrayMarkers.forEach(function (marker) {
+                        let pointStr = marker.getAttribute('longitude') + "," + marker.getAttribute('latitude');
+                        pointsCoordinates.push(pointStr);
+                    })
+                    getRoute(pointsCoordinates);
+                    if (firstDeliveryPoint !== null) {
+                        arrayMarkers.splice(0, 2);
+                    } else {
+                        arrayMarkers.splice(0, 1);
+                    }
+                    arrayMarkers.splice(arrayMarkers.length - 1, 1);
+                }
+            }
+
+            function getRoute(list) {
+                let urlStr = "http://planarry.com/map/route/v1/driving/" + list.join(';');
+                let urlRes = new URL(urlStr);
+                urlRes.searchParams.append('overview', 'full');
+                urlRes.searchParams.append('geometries', 'geojson');
+                urlRes.searchParams.append('steps', true);
+                try {
+                    console.log("My result: " + urlRes);
+                    doRequest(urlRes);
+                } catch (e) {
+                    console.log(e.message);
+                }
+            }
+
+            function doRequest(url) {
+                let jsonResponse = 'empty';
+                let httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", url, false);
+
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.status >= 200 && httpRequest.status < 300) {
+                        jsonResponse = httpRequest.responseText;
+                    } else if (httpRequest.responseText === null) {
+                        jsonResponse = "Loss connection to route server";
+                    } else {
+                        jsonResponse = "Answer from route server " + httpRequest.status;
+                    }
+                };
+                httpRequest.send(null);
+                console.log("My status: " + httpRequest.status);
+                // console.log(jsonResponse);
+
+                let coordinates = parseRouteTrack(jsonResponse);
+                createPolyByRouteJson(coordinates);
+
+            }
+
+            function parseRouteTrack(jsonResponse) {
+                let json = JSON.parse(jsonResponse);
+                if (json.hasOwnProperty('routes')) {
+                    let jsonRoutes = json['routes'];
+                    if (jsonRoutes.length > 0) {
+                        let firstArray = jsonRoutes[0];
+                        let geometry = firstArray['geometry'];
+                        let coordinates = geometry['coordinates'];
+                        return coordinates;
+                    }
+                }
+            }
+
+            function createPolyByRouteJson(coordinatesJson) {
+                let oldPoly = document.querySelector('google-map-poly');
+                if (oldPoly !== null) {
+                    Polymer.dom(map).removeChild(oldPoly);
+                    oldPoly = null;
+                }
+                let poly = document.createElement('google-map-poly');
+                poly.setAttribute('fill-color', '#FFF');
+
+                poly.setAttribute('stroke-color', '#4682B4');
+                poly.setAttribute('fill-opacity', '.5');
+                coordinatesJson.forEach(function (point) {
+                    let polyPoint = document.createElement('google-map-point');
+                    polyPoint.setAttribute('latitude', point[1]);
+                    polyPoint.setAttribute('longitude', point[0]);
+                    Polymer.dom(poly).appendChild(polyPoint);
+                });
+                Polymer.dom(map).appendChild(poly);
             }
         </script>
         <script>
-            $('.AddNew').click(function () {
-                var row = $(this).closest('tr').clone();
-                row.find('input').val('');
-                $(this).closest('tr').after(row);
-                $('input[type="button"]', row).removeClass('AddNew').addClass('RemoveRow').val('Удалить доставку');
-            });
-
-            $('table').on('click', '.RemoveRow', function () {
-                $(this).closest('tr').remove();
-            });
-        </script>
-        <script>
-            $('.green').click(function (e) {
+            $('.green').click(function () {
                 var elems = document.querySelector(".active");
                 if (elems !== null) {
                     $('.green').removeClass('active');
-                } else if (elems) {
-
                 }
                 if (elems != this) {
                     $(this).addClass('active');
                 }
             });
         </script>
-
     </template>
 </div>
 </body>
